@@ -1,0 +1,27 @@
+{
+  "name": "art-studio-app-bot",
+  "version": "1.0.0",
+  "description": "bot for managing bookings",
+  "main": "app.ts",
+  "scripts": {
+    "start": "ts-node src/index.ts",
+    "dev": "nodemon --exec ts-node src/index.ts"
+  },
+  "author": "Artur Kozub",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.14.9",
+    "nodemon": "^3.1.4",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.2"
+  },
+  "dependencies": {
+    "@types/dotenv": "^8.2.0",
+    "@types/node-telegram-bot-api": "^0.64.7",
+    "axios": "^1.7.2",
+    "date-fns": "^3.6.0",
+    "dotenv": "^16.4.5",
+    "moment": "^2.30.1",
+    "node-telegram-bot-api": "^0.66.0"
+  }
+}
