@@ -1,8 +1,11 @@
 import TelegramBot, { CallbackQuery, Message } from "node-telegram-bot-api";
 import { startCommand } from "./commands/startCommand";
-import { authCommand } from "./commands/authCommand";
-import { isAuthenticated } from "./commands/authCommand";
+import { authCommand, isAuthenticated } from "./commands/authCommand";
 import { getBookings, createBooking, updateBooking, deleteBooking } from "./commands/bookingCommands";
+import express, { Express } from "express";
+
+const app: Express = express();
+const PORT = process.env.EXPRESS_PORT || 5000;
 
 const startBot = (token: string) => {
     const bot = new TelegramBot(token, { polling: true })
@@ -45,5 +48,15 @@ const startBot = (token: string) => {
 
     console.log('Bot started succesfully on', Date())
 }
+
+app.get('/', (req, res) => {
+    res.send('Admin bot is working');
+})
+
+app.listen(PORT, () => {
+    console.log('Server for admin bot is working...')
+})
+
+console.log('Bot and server initialized successfully');
 
 export { startBot }
