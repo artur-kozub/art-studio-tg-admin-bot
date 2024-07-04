@@ -113,10 +113,40 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
     bot.sendMessage(chatId, 'Змінити запис');
 }
 
-const deleteBooking = async (bot: TelegramBot, msg: Message) => {
-    const chatId = msg.chat.id;
+const deleteBooking = async (bot: TelegramBot, query: CallbackQuery) => {
+    const chatId = query.message?.chat.id as number;
 
-    bot.sendMessage(chatId, 'Видалити запис');
+    try {
+        await bot.sendMessage(chatId, 'Введіть дату для видалення бронювання (формат: дата в форматі YYYY-MM-DD HH:mm)')
+
+        bot.once('message', async (msg) => {
+            const bookingDateToDeleteInput = msg.text?.trim() || '';
+            if (!bookingDateToDeleteInput) {
+                bot.sendMessage(chatId, 'Неправильний формат даних. Спробуйте ще раз.')
+                return;
+            }
+
+            const bookingDateToDelete = moment(bookingDateToDeleteInput, 'YYYY-MM-DD HH:mm').toISOString();
+            if (!moment(bookingDateToDelete, moment.ISO_8601, true).isValid()) {
+                bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
+                return;
+            }
+
+            const res = await axios.delete('https://art-studio-api.onrender.com/api/bookings/delete', {
+                data: {
+                    bookingDate: bookingDateToDelete
+                }
+            });
+
+            const data = res.data
+            console.log(data);
+
+            await bot.sendMessage(chatId, 'Бронювання видалено успішно')
+        })
+    } catch (e: any) {
+        console.log('Fail at updateBooking', e.message)
+        bot.sendMessage(chatId, 'Fail at updateBooking')
+    }
 }
 
 export { getBookings, createBooking, updateBooking, deleteBooking }

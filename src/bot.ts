@@ -36,7 +36,7 @@ const startBot = (token: string) => {
                 updateBooking(bot, callbackQuery);
                 break;
             case 'delete':
-                deleteBooking(bot, msg);
+                deleteBooking(bot, callbackQuery);
                 break;
             default:
                 bot.sendMessage(chatId, 'Невідома команда')
