@@ -58,17 +58,44 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            const res = await axios.post(`https://art-studio-api.onrender.com/api/bookings/book?price=${price}`, {
-                bookingDate,
-                bookingHours
-            })
+            try {
+                const res = await axios.post(`https://art-studio-api.onrender.com/api/bookings/book?price=${price}`, {
+                    bookingDate,
+                    bookingHours
+                })
 
-            const createdBooking = res.data.booking;
-            const formatedDate = format(new Date(createdBooking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
+                const createdBooking = res.data.booking;
+                const formatedDate = format(new Date(createdBooking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
 
-            await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](https://art-studio-api.onrender.com/api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
-                parse_mode: 'Markdown'
-            });
+                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](https://art-studio-api.onrender.com/api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
+                    parse_mode: 'Markdown'
+                });
+            } catch (e: any) {
+                if (axios.isAxiosError(e)) {
+                    if (e.response) {
+                        const status = e.response.status;
+                        switch (status) {
+                            case 400:
+                                await bot.sendMessage(chatId, 'Невірний запит. Перевірте введені дані та спробуйте ще раз.');
+                                break;
+                            case 404:
+                                await bot.sendMessage(chatId, 'Ресурс не знайдено. Спробуйте ще раз пізніше.');
+                                break;
+                            case 500:
+                                await bot.sendMessage(chatId, 'Внутрішня помилка сервера. Спробуйте ще раз пізніше.');
+                                break;
+                            default:
+                                await bot.sendMessage(chatId, `Сталася помилка. Код статусу: ${status}.`);
+                        }
+                    } else if (e.request) {
+                        await bot.sendMessage(chatId, 'Не вдалося отримати відповідь від сервера. Перевірте ваше з’єднання і спробуйте ще раз.');
+                    } else {
+                        await bot.sendMessage(chatId, `Сталася помилка при налаштуванні запиту: ${e.message}`);
+                    }
+                } else {
+                    await bot.sendMessage(chatId, `Невідома помилка: ${e.message}`);
+                }
+            }
         })
     } catch (e: any) {
         console.log('Fail at createBooking', e.message)
@@ -96,14 +123,41 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            const res = await axios.put(`https://art-studio-api.onrender.com/api/bookings/update`, {
-                newBookingDate,
-                oldBookingDate
-            })
-            const data = res.data
-            console.log(data);
+            try {
+                const res = await axios.put(`https://art-studio-api.onrender.com/api/bookings/update`, {
+                    newBookingDate,
+                    oldBookingDate
+                })
+                const data = res.data
+                console.log(data);
 
-            await bot.sendMessage(chatId, 'Бронювання успішно змінено');
+                await bot.sendMessage(chatId, 'Бронювання успішно змінено');
+            } catch (e: any) {
+                if (axios.isAxiosError(e)) {
+                    if (e.response) {
+                        const status = e.response.status;
+                        switch (status) {
+                            case 400:
+                                await bot.sendMessage(chatId, 'Невірний запит. Перевірте введені дані та спробуйте ще раз.');
+                                break;
+                            case 404:
+                                await bot.sendMessage(chatId, 'Ресурс не знайдено. Спробуйте ще раз пізніше.');
+                                break;
+                            case 500:
+                                await bot.sendMessage(chatId, 'Внутрішня помилка сервера. Спробуйте ще раз пізніше.');
+                                break;
+                            default:
+                                await bot.sendMessage(chatId, `Сталася помилка. Код статусу: ${status}.`);
+                        }
+                    } else if (e.request) {
+                        await bot.sendMessage(chatId, 'Не вдалося отримати відповідь від сервера. Перевірте ваше з’єднання і спробуйте ще раз.');
+                    } else {
+                        await bot.sendMessage(chatId, `Сталася помилка при налаштуванні запиту: ${e.message}`);
+                    }
+                } else {
+                    await bot.sendMessage(chatId, `Невідома помилка: ${e.message}`);
+                }
+            }
         })
     } catch (e: any) {
         console.log('Fail at updateBooking', e.message)
@@ -132,16 +186,43 @@ const deleteBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            const res = await axios.delete('https://art-studio-api.onrender.com/api/bookings/delete', {
-                data: {
-                    bookingDate: bookingDateToDelete
+            try {
+                const res = await axios.delete('https://art-studio-api.onrender.com/api/bookings/delete', {
+                    data: {
+                        bookingDate: bookingDateToDelete
+                    }
+                });
+
+                const data = res.data
+                console.log(data);
+
+                await bot.sendMessage(chatId, 'Бронювання видалено успішно')
+            } catch (e: any) {
+                if (axios.isAxiosError(e)) {
+                    if (e.response) {
+                        const status = e.response.status;
+                        switch (status) {
+                            case 400:
+                                await bot.sendMessage(chatId, 'Невірний запит. Перевірте введені дані та спробуйте ще раз.');
+                                break;
+                            case 404:
+                                await bot.sendMessage(chatId, 'Ресурс не знайдено. Спробуйте ще раз пізніше.');
+                                break;
+                            case 500:
+                                await bot.sendMessage(chatId, 'Внутрішня помилка сервера. Спробуйте ще раз пізніше.');
+                                break;
+                            default:
+                                await bot.sendMessage(chatId, `Сталася помилка. Код статусу: ${status}.`);
+                        }
+                    } else if (e.request) {
+                        await bot.sendMessage(chatId, 'Не вдалося отримати відповідь від сервера. Перевірте ваше з’єднання і спробуйте ще раз.');
+                    } else {
+                        await bot.sendMessage(chatId, `Сталася помилка при налаштуванні запиту: ${e.message}`);
+                    }
+                } else {
+                    await bot.sendMessage(chatId, `Невідома помилка: ${e.message}`);
                 }
-            });
-
-            const data = res.data
-            console.log(data);
-
-            await bot.sendMessage(chatId, 'Бронювання видалено успішно')
+            }
         })
     } catch (e: any) {
         console.log('Fail at updateBooking', e.message)
