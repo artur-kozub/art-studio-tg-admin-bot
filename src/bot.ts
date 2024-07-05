@@ -3,6 +3,7 @@ import { startCommand } from "./commands/startCommand";
 import { authCommand, isAuthenticated } from "./commands/authCommand";
 import { getBookings, createBooking, updateBooking, deleteBooking } from "./commands/bookingCommands";
 import axios from "axios";
+import cors from 'cors';
 import express, { Express } from "express";
 
 const app: Express = express();
@@ -56,6 +57,7 @@ const startBot = (token: string) => {
 }
 
 app.use(express.json())
+app.use(cors());
 
 app.get('/', (req, res) => {
     res.send('Admin bot is working');
