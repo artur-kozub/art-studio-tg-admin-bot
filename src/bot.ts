@@ -12,6 +12,11 @@ const PORT = process.env.EXPRESS_PORT || 5000;
 const token = process.env.BOT_TOKEN;
 const adminChatId = process.env.ADMIN_CHAT_ID
 
+const chatIds = [
+    process.env.ADMIN_CHAT_ID_1,
+    process.env.ADMIN_CHAT_ID_2
+]
+
 const startBot = (token: string) => {
     const bot = new TelegramBot(token, { polling: true })
 
@@ -66,11 +71,19 @@ app.get('/', (req, res) => {
 app.post('/send-message', async (req, res) => {
     const message = req.body.message
 
+    if (!message) {
+        return res.status(401).send('Message is required');
+    }
+
     try {
-        const response = await axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
-            chat_id: adminChatId,
-            text: message
-        })
+        const promises = chatIds.map(chatId => {
+            return axios.post(`https://api.telegram.org/bot${token}/sendMessage`, {
+                chat_id: chatId,
+                text: message,
+            });
+        });
+
+        await Promise.all(promises);
 
         res.status(200).send({ message: 'Message sent to admin bot succesfully' })
     } catch (e: any) {
