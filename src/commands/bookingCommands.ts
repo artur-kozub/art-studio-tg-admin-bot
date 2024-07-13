@@ -8,7 +8,7 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
     const chatId = msg.chat.id;
 
     try {
-        const res = await axios.get('https://art-studio-api.onrender.com/api/bookings/all');
+        const res = await axios.get(`${process.env.API_INSTANCE}api/bookings/all`);
         const bookings = res.data;
 
         const now = new Date();
@@ -59,7 +59,7 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
             }
 
             try {
-                const res = await axios.post(`https://art-studio-api.onrender.com/api/bookings/book?price=${price}`, {
+                const res = await axios.post(`${process.env.API_INSTANCE}api/bookings/book?price=${price}`, {
                     bookingDate,
                     bookingHours
                 })
@@ -124,7 +124,7 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
             }
 
             try {
-                const res = await axios.put(`https://art-studio-api.onrender.com/api/bookings/update`, {
+                const res = await axios.put(`${process.env.API_INSTANCE}api/bookings/update`, {
                     newBookingDate,
                     oldBookingDate
                 })
@@ -187,7 +187,7 @@ const deleteBooking = async (bot: TelegramBot, query: CallbackQuery) => {
             }
 
             try {
-                const res = await axios.delete('https://art-studio-api.onrender.com/api/bookings/delete', {
+                const res = await axios.delete(`${process.env.API_INSTANCE}api/bookings/delete`, {
                     data: {
                         bookingDate: bookingDateToDelete
                     }
