@@ -67,7 +67,7 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 const createdBooking = res.data.booking;
                 const formatedDate = format(new Date(createdBooking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
 
-                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](https://art-studio-api.onrender.com/api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
+                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
                     parse_mode: 'Markdown'
                 });
             } catch (e: any) {
