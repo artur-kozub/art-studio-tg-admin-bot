@@ -10,6 +10,7 @@
   "author": "Artur Kozub",
   "license": "ISC",
   "devDependencies": {
+    "@types/date-fns": "^2.6.0",
     "@types/node": "^20.14.9",
     "nodemon": "^3.1.4",
     "ts-node": "^10.9.2",

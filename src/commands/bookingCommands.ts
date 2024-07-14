@@ -20,11 +20,12 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
             return;
         }
 
-        let message = 'Я знайшов наступні записи: \n\n'
+        let message = 'Знайдено наступні записи: \n\n'
 
         approvedBookings.forEach((booking: any, index: number) => {
             if (booking.paymentStatus === 'Approved') {
                 const formatedDate = format(new Date(booking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
+                console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formatedDate)
                 message += `${index + 1}) Дата: ${formatedDate}\n Кількість годин: ${booking.bookingHours}\n\n`;
             } else {
                 bot.sendMessage(chatId, 'Немає оплачених бронювань')
