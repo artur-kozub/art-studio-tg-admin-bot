@@ -2,6 +2,7 @@ import TelegramBot, { CallbackQuery, Message } from 'node-telegram-bot-api';
 import axios from 'axios';
 import moment from 'moment';
 import { format, isAfter } from 'date-fns';
+import { formatInTimeZone } from 'date-fns-tz';
 import { uk } from 'date-fns/locale';
 
 const getBookings = async (bot: TelegramBot, msg: Message) => {
@@ -24,9 +25,10 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
 
         approvedBookings.forEach((booking: any, index: number) => {
             if (booking.paymentStatus === 'Approved') {
-                const formatedDate = format(new Date(booking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
-                console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formatedDate)
-                message += `${index + 1}) Дата: ${formatedDate}\n Кількість годин: ${booking.bookingHours}\n\n`;
+                const timeZone = 'Europe/Kiev'
+                const formattedDate = formatInTimeZone(new Date(booking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk });
+                console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formattedDate);
+                message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n\n`;
             } else {
                 bot.sendMessage(chatId, 'Немає оплачених бронювань')
             }
@@ -164,8 +166,6 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
         console.log('Fail at updateBooking', e.message)
         bot.sendMessage(chatId, 'Fail at updateBooking')
     }
-
-    bot.sendMessage(chatId, 'Змінити запис');
 }
 
 const deleteBooking = async (bot: TelegramBot, query: CallbackQuery) => {
