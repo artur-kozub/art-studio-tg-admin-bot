@@ -1,7 +1,7 @@
 import TelegramBot, { CallbackQuery, Message } from 'node-telegram-bot-api';
 import axios from 'axios';
 import moment from 'moment';
-import { isAfter, parse, isValid, formatISO, format } from 'date-fns';
+import { isAfter, parse, isValid, format, subHours } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { uk } from 'date-fns/locale';
 
@@ -65,7 +65,14 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            const bookingDate = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ssXXX');
+            const adjustedDate = subHours(parsedDate, 3);
+
+            console.log('parsedDate - ' + adjustedDate.toUTCString());
+
+            /* const bookingDate = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ssXXX');
+            console.log('bookingDate - ' + bookingDate); */
+
+            const bookingDate = format(adjustedDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
             console.log('bookingDate - ' + bookingDate);
 
             try {
