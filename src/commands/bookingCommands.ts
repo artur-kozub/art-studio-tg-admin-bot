@@ -5,6 +5,8 @@ import { format, isAfter } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { uk } from 'date-fns/locale';
 
+const timeZone = 'Europe/Kiev'
+
 const getBookings = async (bot: TelegramBot, msg: Message) => {
     const chatId = msg.chat.id;
 
@@ -25,7 +27,6 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
 
         approvedBookings.forEach((booking: any, index: number) => {
             if (booking.paymentStatus === 'Approved') {
-                const timeZone = 'Europe/Kiev'
                 const formattedDate = formatInTimeZone(new Date(booking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk });
                 console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formattedDate);
                 message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n\n`;
@@ -68,7 +69,8 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 })
 
                 const createdBooking = res.data.booking;
-                const formatedDate = format(new Date(createdBooking.bookingDate), 'd MMMM yyyy, HH:mm', { locale: uk })
+                const formatedDate = formatInTimeZone(new Date(createdBooking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk })
+                console.log(formatedDate)
 
                 await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
                     parse_mode: 'Markdown'
