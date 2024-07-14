@@ -1,11 +1,11 @@
 import TelegramBot, { CallbackQuery, Message } from 'node-telegram-bot-api';
 import axios from 'axios';
 import moment from 'moment';
-import { format, isAfter } from 'date-fns';
+import { isAfter, parse, isValid, formatISO } from 'date-fns';
 import { formatInTimeZone } from 'date-fns-tz';
 import { uk } from 'date-fns/locale';
 
-const timeZone = 'Europe/Kiev'
+const timeZone = 'Europe/Kiev';
 
 const getBookings = async (bot: TelegramBot, msg: Message) => {
     const chatId = msg.chat.id;
@@ -56,11 +56,17 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            const bookingDate = moment(bookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
-            if (!moment(bookingDate, moment.ISO_8601, true).isValid()) {
-                bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
+            const parsedDate = parse(bookingDateInput, 'yyyy-MM-dd HH:mm', new Date());
+
+            console.log('parsedDate - ' + parsedDate);
+
+            if (!isValid(parsedDate)) {
+                await bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз');
                 return;
             }
+
+            const bookingDate = formatInTimeZone(parsedDate, timeZone, 'yyyy-MM-dd\'T\'HH:mm:ssXXX');
+            console.log('bookingDate - ' + bookingDate);
 
             try {
                 const res = await axios.post(`${process.env.API_INSTANCE}api/bookings/book?price=${price}`, {
