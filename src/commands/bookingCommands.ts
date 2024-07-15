@@ -29,7 +29,7 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
             if (booking.paymentStatus === 'Approved') {
                 const formattedDate = formatInTimeZone(new Date(booking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk });
                 console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formattedDate);
-                message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n\n`;
+                message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n ID: ${booking.orderReference}\n\n`;
             } else {
                 bot.sendMessage(chatId, 'Немає оплачених бронювань')
             }
@@ -44,6 +44,7 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
 
 const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
     const chatId = query.message?.chat.id as number;
+    console.log('Create booking started...')
 
     try {
         await bot.sendMessage(chatId, 'Введіть дані для створення бронювання (формат: ціна, дата в форматі YYYY-MM-DD HH:mm, кількість годин)');
@@ -69,9 +70,6 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
 
             console.log('parsedDate - ' + adjustedDate.toUTCString());
 
-            /* const bookingDate = format(parsedDate, 'yyyy-MM-dd\'T\'HH:mm:ssXXX');
-            console.log('bookingDate - ' + bookingDate); */
-
             const bookingDate = format(adjustedDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
             console.log('bookingDate - ' + bookingDate);
 
@@ -85,9 +83,10 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 const formatedDate = formatInTimeZone(new Date(createdBooking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk })
                 console.log(formatedDate)
 
-                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
+                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nID бронювання: ${createdBooking.orderReference} \nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
                     parse_mode: 'Markdown'
                 });
+                console.log('Create booking completed succesfully...')
             } catch (e: any) {
                 if (axios.isAxiosError(e)) {
                     if (e.response) {
@@ -125,18 +124,18 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
     const chatId = query.message?.chat.id as number;
 
     try {
-        await bot.sendMessage(chatId, 'Введіть дані для зміни бронювання студії (формат: стара дата в форматі YYYY-MM-DD HH:mm, нова дата в форматі YYYY-MM-DD HH:mm)')
+        await bot.sendMessage(chatId, 'Введіть дані для зміни бронювання студії (формат: ID бронювання, нова дата в форматі YYYY-MM-DD HH:mm)')
 
         bot.once('message', async (msg) => {
-            const [oldBookingDateInput, newBookingDateInput] = msg.text?.split(',').map(s => s.trim()) || [];
-            if (!oldBookingDateInput || !newBookingDateInput) {
+            const [orderReference, newBookingDateInput] = msg.text?.split(',').map(s => s.trim()) || [];
+            if (!orderReference || !newBookingDateInput) {
                 bot.sendMessage(chatId, 'Неправильний формат даних. Спробуйте ще раз.')
                 return;
             }
 
-            const oldBookingDate = moment(oldBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
+            /* const oldBookingDate = moment(oldBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString(); */
             const newBookingDate = moment(newBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
-            if (!moment(oldBookingDate, moment.ISO_8601, true).isValid() && !moment(newBookingDate, moment.ISO_8601, true).isValid()) {
+            if (/* !moment(oldBookingDate, moment.ISO_8601, true).isValid() && */ !moment(newBookingDate, moment.ISO_8601, true).isValid()) {
                 bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
                 return;
             }
@@ -144,7 +143,8 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
             try {
                 const res = await axios.put(`${process.env.API_INSTANCE}api/bookings/update`, {
                     newBookingDate,
-                    oldBookingDate
+                    orderReference
+                    /* oldBookingDate */
                 })
                 const data = res.data
                 console.log(data);
@@ -187,25 +187,19 @@ const deleteBooking = async (bot: TelegramBot, query: CallbackQuery) => {
     const chatId = query.message?.chat.id as number;
 
     try {
-        await bot.sendMessage(chatId, 'Введіть дату для видалення бронювання (формат: дата в форматі YYYY-MM-DD HH:mm)')
+        await bot.sendMessage(chatId, 'Введіть ID бронювання для видалення')
 
         bot.once('message', async (msg) => {
-            const bookingDateToDeleteInput = msg.text?.trim() || '';
-            if (!bookingDateToDeleteInput) {
+            const orderReferenceToDeleteInput = msg.text?.trim() || '';
+            if (!orderReferenceToDeleteInput) {
                 bot.sendMessage(chatId, 'Неправильний формат даних. Спробуйте ще раз.')
-                return;
-            }
-
-            const bookingDateToDelete = moment(bookingDateToDeleteInput, 'YYYY-MM-DD HH:mm').toISOString();
-            if (!moment(bookingDateToDelete, moment.ISO_8601, true).isValid()) {
-                bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
                 return;
             }
 
             try {
                 const res = await axios.delete(`${process.env.API_INSTANCE}api/bookings/delete`, {
                     data: {
-                        bookingDate: bookingDateToDelete
+                        orderReference: orderReferenceToDeleteInput
                     }
                 });
 
