@@ -133,18 +133,25 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 return;
             }
 
-            /* const oldBookingDate = moment(oldBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString(); */
-            const newBookingDate = moment(newBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
-            if (/* !moment(oldBookingDate, moment.ISO_8601, true).isValid() && */ !moment(newBookingDate, moment.ISO_8601, true).isValid()) {
+            /* const newBookingDate = moment(newBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
+            if (!moment(newBookingDate, moment.ISO_8601, true).isValid()) {
                 bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
                 return;
-            }
+            } */
+
+            const parsedDate = parse(newBookingDateInput, 'yyyy-MM-dd HH:mm', new Date());
+            console.log('parsedDate: ' + parsedDate)
+
+            const adjustedDate = subHours(parsedDate, 3);
+            console.log('adjustedDate: ' + adjustedDate);
+
+            const bookingDate = format(adjustedDate, "yyyy-MM-dd'T'HH:mm:ss'Z'");
+            console.log('newBookingDate: ' + bookingDate)
 
             try {
                 const res = await axios.put(`${process.env.API_INSTANCE}api/bookings/update`, {
-                    newBookingDate,
+                    newBookingDate: bookingDate,
                     orderReference
-                    /* oldBookingDate */
                 })
                 const data = res.data
                 console.log(data);
