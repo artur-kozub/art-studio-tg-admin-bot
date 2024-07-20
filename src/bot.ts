@@ -10,11 +10,12 @@ const app: Express = express();
 const PORT = process.env.EXPRESS_PORT || 5000;
 
 const token = process.env.BOT_TOKEN;
-const adminChatId = process.env.ADMIN_CHAT_ID
 
 const chatIds = [
     process.env.ADMIN_CHAT_ID_1,
-    process.env.ADMIN_CHAT_ID_2
+    process.env.ADMIN_CHAT_ID_2,
+    process.env.ADMIN_CHAT_ID_3,
+    process.env.ADMIN_CHAT_ID_4
 ]
 
 const startBot = (token: string) => {
