@@ -29,13 +29,13 @@ const getBookings = async (bot: TelegramBot, msg: Message) => {
             if (booking.paymentStatus === 'Approved') {
                 const formattedDate = formatInTimeZone(new Date(booking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk });
                 console.log('non-formatted date - ' + booking.bookingDate + '\nformatted date - ' + formattedDate);
-                message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n ID: ${booking.orderReference}\n\n`;
+                message += `${index + 1}) Дата: ${formattedDate}\n Кількість годин: ${booking.bookingHours}\n ID: *${booking.orderReference}*\n\n`;
             } else {
                 bot.sendMessage(chatId, 'Немає оплачених бронювань')
             }
         });
 
-        await bot.sendMessage(chatId, message);
+        await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
     } catch (e: any) {
         console.log('Fail at getBookings', e.message);
         bot.sendMessage(chatId, 'Fail at getBookings');
@@ -83,7 +83,7 @@ const createBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 const formatedDate = formatInTimeZone(new Date(createdBooking.bookingDate), timeZone, 'd MMMM yyyy, HH:mm', { locale: uk })
                 console.log(formatedDate)
 
-                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nID бронювання: ${createdBooking.orderReference} \nКількість годин: ${createdBooking.bookingHours}\nПотрібно сплатити за цим [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
+                await bot.sendMessage(chatId, `Створено запис на ${formatedDate}\nID бронювання: *${createdBooking.orderReference}* \nКількість годин: ${createdBooking.bookingHours}\n\n❕*БРОНЮВАННЯ НЕ ОПЛАЧЕНО*\n Потрібно сплатити за [посиланням](${process.env.API_INSTANCE}api/payments/payment-form?currency=UAH&productName[]=photosession&productCount[]=1&bookingId=${createdBooking._id})`, {
                     parse_mode: 'Markdown'
                 });
                 console.log('Create booking completed succesfully...')
@@ -132,12 +132,6 @@ const updateBooking = async (bot: TelegramBot, query: CallbackQuery) => {
                 bot.sendMessage(chatId, 'Неправильний формат даних. Спробуйте ще раз.')
                 return;
             }
-
-            /* const newBookingDate = moment(newBookingDateInput, 'YYYY-MM-DD HH:mm').toISOString();
-            if (!moment(newBookingDate, moment.ISO_8601, true).isValid()) {
-                bot.sendMessage(chatId, 'Невірний формат дати, спробуйте ще раз')
-                return;
-            } */
 
             const parsedDate = parse(newBookingDateInput, 'yyyy-MM-dd HH:mm', new Date());
             console.log('parsedDate: ' + parsedDate)
